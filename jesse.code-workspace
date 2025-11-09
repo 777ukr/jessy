@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"name": "Jesse Test",
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "${workspaceFolder}/jesse-master/venv/bin/python",
+		"python.analysis.extraPaths": [
+			"${workspaceFolder}/jesse-master"
+		],
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/*.pyc": true,
+			"**/.pytest_cache": true,
+			"**/.mypy_cache": true,
+			"**/node_modules": true,
+			"**/.git": true
+		},
+		"files.watcherExclude": {
+			"**/.git/objects/**": true,
+			"**/node_modules/**": true,
+			"**/venv/**": true
+		},
+		"search.exclude": {
+			"**/.git": true,
+			"**/venv": true,
+			"**/__pycache__": true
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-python.python",
+			"ms-python.vscode-pylance"
+		]
+	}
+}
+
+

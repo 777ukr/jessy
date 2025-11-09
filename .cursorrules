@@ -1,0 +1,67 @@
+# Cursor Rules for Jesse Trading Framework
+
+## Project Context
+Jesse is an advanced crypto trading framework for backtesting, optimizing, and live trading strategies.
+
+**Technology Stack**:
+- Python 3.10+
+- FastAPI + Uvicorn for web interface
+- PostgreSQL for database
+- Redis for caching and real-time updates
+- WebSocket for live data
+
+## Project Goal
+Test and develop trading strategies using Jesse framework on separate port (9001).
+
+## Code Style & Best Practices
+
+### Python Conventions
+- Follow PEP 8 style guide
+- Use `snake_case` for variables, functions, and modules
+- Use `PascalCase` for classes
+- Type hints are encouraged
+- Use f-strings for string formatting
+
+### Jesse-Specific Rules
+- Always use `.env` file for configuration (APP_PORT=9001)
+- Ensure Redis is running before starting server
+- Ensure PostgreSQL is running and database exists
+- Use `jesse run` command to start server
+- Project structure requires `strategies/` and `storage/` directories
+
+### File Organization
+```
+jesse-test/
+├── jesse-master/          # Jesse framework source
+│   ├── jesse/             # Main package
+│   ├── .env               # Configuration (port 9001)
+│   └── requirements.txt   # Dependencies
+├── start_test_server.sh   # Launch script
+└── README.md              # Documentation
+```
+
+### Configuration
+- Port: 9001 (separate from main installation)
+- Database: jesse_test_db (PostgreSQL)
+- Redis DB: 1 (separate from main)
+- Host: 0.0.0.0
+
+### Testing
+- Use `./start_test_server_simple.sh` for quick start
+- Check Redis: `redis-cli ping`
+- Check database connection before running
+- Server URL: http://localhost:9001
+
+### Error Handling
+- Check Redis connection before starting
+- Validate .env file exists
+- Ensure project structure (strategies/, storage/)
+- Handle database connection errors gracefully
+
+## Key Principles
+1. **Isolation** - Separate port and database for testing
+2. **Simplicity** - Use simple scripts for common tasks
+3. **Documentation** - Keep README updated
+4. **Error Prevention** - Check dependencies before running
+
+
