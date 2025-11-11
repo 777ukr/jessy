@@ -26,30 +26,42 @@ def backtest(request_json: BacktestRequestJson, authorization: Optional[str] = H
     if not authenticator.is_valid_token(authorization):
         return authenticator.unauthorized_response()
 
-    jh.validate_cwd()
+    try:
+        jh.validate_cwd()
+    except Exception as e:
+        return JSONResponse({'error': f'CWD validation failed: {str(e)}'}, status_code=500)
 
-    from jesse.modes.backtest_mode import run as run_backtest
+    try:
+        from jesse.modes.backtest_mode import run as run_backtest
 
-    process_manager.add_task(
-        run_backtest,
-        request_json.id,
-        request_json.debug_mode,
-        request_json.config,
-        request_json.exchange,
-        request_json.routes,
-        request_json.data_routes,
-        request_json.start_date,
-        request_json.finish_date,
-        None,
-        request_json.export_chart,
-        request_json.export_tradingview,
-        request_json.export_csv,
-        request_json.export_json,
-        request_json.fast_mode,
-        request_json.benchmark
-    )
+        process_manager.add_task(
+            run_backtest,
+            request_json.id,
+            request_json.debug_mode,
+            request_json.config,
+            request_json.exchange,
+            request_json.routes,
+            request_json.data_routes,
+            request_json.start_date,
+            request_json.finish_date,
+            None,
+            request_json.export_chart,
+            request_json.export_tradingview,
+            request_json.export_csv,
+            request_json.export_json,
+            request_json.fast_mode,
+            request_json.benchmark
+        )
 
-    return JSONResponse({'message': 'Started backtesting...'}, status_code=202)
+        return JSONResponse({'message': 'Started backtesting...'}, status_code=202)
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback_str = traceback.format_exc()
+        return JSONResponse({
+            'error': error_msg,
+            'traceback': traceback_str
+        }, status_code=500)
 
 
 @router.post("/cancel")

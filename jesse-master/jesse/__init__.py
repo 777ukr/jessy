@@ -43,6 +43,12 @@ async def index():
     return FileResponse(f"{JESSE_DIR}/static/index.html")
 
 
+# load rating page
+@fastapi_app.get("/rating")
+async def rating():
+    return FileResponse(f"{JESSE_DIR}/static/rating.html")
+
+
 @fastapi_app.post("/terminate-all")
 async def terminate_all(authorization: Optional[str] = Header(None)):
     if not authenticator.is_valid_token(authorization):
@@ -264,6 +270,7 @@ from jesse.controllers.config_controller import router as config_router
 from jesse.controllers.notification_controller import router as notification_router
 from jesse.controllers.system_controller import router as system_router
 from jesse.controllers.file_controller import router as file_router
+from jesse.controllers.rating_controller import router as rating_router
 
 # register routers
 fastapi_app.include_router(websocket_router)
@@ -277,6 +284,7 @@ fastapi_app.include_router(config_router)
 fastapi_app.include_router(notification_router)
 fastapi_app.include_router(system_router)
 fastapi_app.include_router(file_router)
+fastapi_app.include_router(rating_router)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # #

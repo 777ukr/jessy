@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jesse Trading Strategy Rating - Compare and rank crypto trading strategies with Ninja Score. View detailed backtest results, performance metrics, and strategy analysis.">
+    <meta name="keywords" content="trading strategies, backtesting, crypto trading, strategy rating, ninja score, trading performance">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Jesse Trading Strategy Rating">
+    <meta property="og:description" content="Compare and rank crypto trading strategies with comprehensive performance metrics">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jesse.trade/rating">
+    <link rel="canonical" href="https://jesse.trade/rating">
+    <title>Strategy Rating - Jesse Trading Framework</title>
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Jesse Trading Strategy Rating",
+        "description": "Compare and rank crypto trading strategies with Ninja Score. View detailed backtest results, performance metrics, and strategy analysis.",
+        "url": "https://jesse.trade/rating",
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "about": {
+            "@type": "Thing",
+            "name": "Cryptocurrency Trading Strategies",
+            "description": "Automated trading strategies for cryptocurrency markets"
+        }
+    }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #f1f5f9;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .filters-section {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #334155;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 5px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+        
+        .preset-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .table-container {
+            background: #1e293b;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        
+        .export-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+        
+        .export-btn:hover {
+            background: #2563eb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #0f172a;
+        }
+        
+        th {
+            padding: 12px;
+            text-align: left;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th:hover {
+            background: #1e293b;
+        }
+        
+        th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+        }
+        
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+        
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+            font-size: 0.875rem;
+        }
+        
+        tbody tr:hover {
+            background: #0f172a;
+        }
+        
+        .ninja-score {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .ninja-score.excellent { color: #10b981; }
+        .ninja-score.good { color: #3b82f6; }
+        .ninja-score.satisfactory { color: #f59e0b; }
+        .ninja-score.poor { color: #ef4444; }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .chart-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        
+        .chart-title {
+            color: #f1f5f9;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        .error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>📊 Strategy Rating</h1>
+            <select id="language-select" style="padding: 8px 12px; background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 4px; cursor: pointer;">
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+            </select>
+        </div>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <!-- Top 3 Leaders -->
+        <div id="top-leaders" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+        
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="total_strategies">Total Strategies</div>
+                <div class="stat-value" id="total-strategies">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="filtered_strategies">Filtered</div>
+                <div class="stat-value" id="filtered-strategies">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="avg_ninja_score">Avg Ninja Score</div>
+                <div class="stat-value" id="avg-ninja-score">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label" data-i18n="best_ninja_score">Best Ninja Score</div>
+                <div class="stat-value" id="best-ninja-score">-</div>
+            </div>
+        </div>
+        
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label data-i18n="min_ninja_score">Min Ninja Score</label>
+                    <input type="number" id="min-ninja-score" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_win_rate">Min Win Rate (%)</label>
+                    <input type="number" id="min-win-rate" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_return">Min Return (%)</label>
+                    <input type="number" id="min-return" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_profit_factor">Min Profit Factor</label>
+                    <input type="number" step="0.1" id="min-profit-factor" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_expectancy">Min Expectancy</label>
+                    <input type="number" step="0.01" id="min-expectancy" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_trades">Min Trades</label>
+                    <input type="number" id="min-trades" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="min_sharpe">Min Sharpe</label>
+                    <input type="number" step="0.1" id="min-sharpe" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="max_drawdown">Max Drawdown (%)</label>
+                    <input type="number" id="max-drawdown" placeholder="100">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="sort_by">Sort By</label>
+                    <select id="sort-by">
+                        <option value="ninja_score">Ninja Score</option>
+                        <option value="total_pnl">Total PnL</option>
+                        <option value="return_pct">Return %</option>
+                        <option value="win_rate">Win Rate %</option>
+                        <option value="sharpe">Sharpe Ratio</option>
+                        <option value="profit_factor">Profit Factor</option>
+                        <option value="expectancy">Expectancy</option>
+                        <option value="trades">Trades</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="sort_order">Order</label>
+                    <select id="sort-order">
+                        <option value="desc" data-i18n="desc">Descending</option>
+                        <option value="asc" data-i18n="asc">Ascending</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="preset-buttons">
+                <button class="preset-btn" onclick="applyPreset('top')" data-i18n="preset_top">🏆 Top Strategies</button>
+                <button class="preset-btn" onclick="applyPreset('profitable')" data-i18n="preset_profitable">💰 Profitable Only</button>
+                <button class="preset-btn" onclick="applyPreset('high-winrate')" data-i18n="preset_high_winrate">📈 High Win Rate</button>
+                <button class="preset-btn" onclick="resetFilters()" data-i18n="reset_filters">🔄 Reset Filters</button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title" data-i18n="strategies">Strategies</div>
+                <button class="export-btn" onclick="exportCSV()" data-i18n="export_csv">📥 Export CSV</button>
+            </div>
+            <div id="table-content">
+                <div class="loading" data-i18n="loading">Loading data...</div>
+            </div>
+        </div>
+        
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-title">Ninja Score Distribution</div>
+                <canvas id="ninja-score-chart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Top 3 Strategies Comparison</div>
+                <canvas id="radar-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let authToken = null;
+        let currentSessions = [];
+        let currentSort = { field: 'ninja_score', order: 'desc' };
+        
+        // Initialize
+        async function init() {
+            await authenticate();
+            await loadSessions();
+            setupEventListeners();
+        }
+        
+        async function authenticate() {
+            try {
+                const response = await fetch('/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: 'test_password_123' })
+                });
+                const data = await response.json();
+                authToken = data.auth_token;
+            } catch (error) {
+                const errorMsg = currentLang === 'en' ? 'Authentication error: ' : 'Ошибка аутентификации: ';
+                showError(errorMsg + error.message);
+            }
+        }
+        
+        async function loadSessions() {
+            try {
+                const filters = getFilters();
+                const response = await fetch('/rating/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': authToken
+                    },
+                    body: JSON.stringify({
+                        ...filters,
+                        limit: 1000,
+                        offset: 0,
+                        status_filter: 'finished',
+                        sort_by: currentSort.field,
+                        sort_order: currentSort.order
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                currentSessions = data.sessions || [];
+                
+                updateStats(data.statistics);
+                renderTopLeaders(currentSessions);
+                renderTable(currentSessions);
+                updateCharts(currentSessions);
+            } catch (error) {
+                const errorMsg = currentLang === 'en' ? 'Error loading data: ' : 'Ошибка загрузки данных: ';
+                showError(errorMsg + error.message);
+            }
+        }
+        
+        function getFilters() {
+            return {
+                min_ninja_score: document.getElementById('min-ninja-score').value || null,
+                min_win_rate: document.getElementById('min-win-rate').value || null,
+                min_return: document.getElementById('min-return').value || null,
+                min_profit_factor: document.getElementById('min-profit-factor').value || null,
+                min_expectancy: document.getElementById('min-expectancy').value || null,
+                min_trades: document.getElementById('min-trades').value || null,
+                min_sharpe: document.getElementById('min-sharpe').value || null,
+                max_drawdown: document.getElementById('max-drawdown').value || null
+            };
+        }
+        
+        function updateStats(stats) {
+            document.getElementById('total-strategies').textContent = stats.total_strategies || 0;
+            document.getElementById('filtered-strategies').textContent = stats.filtered_strategies || 0;
+            document.getElementById('avg-ninja-score').textContent = stats.avg_ninja_score || 0;
+            document.getElementById('best-ninja-score').textContent = stats.best_ninja_score || 0;
+        }
+        
+        function renderTopLeaders(sessions) {
+            const top3 = sessions.slice(0, 3);
+            const container = document.getElementById('top-leaders');
+            
+            if (top3.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            const colors = ['#fbbf24', '#94a3b8', '#cd7f32'];
+            
+            container.innerHTML = top3.map((session, index) => {
+                const m = session.metrics;
+                const reportUrl = session.report_url || `/#/backtest/${session.id}`;
+                return `
+                    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                                padding: 20px; border-radius: 12px; border: 2px solid ${colors[index]};
+                                text-align: center; position: relative;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">${medals[index]}</div>
+                        <div style="font-size: 1.25rem; font-weight: 600; color: ${colors[index]}; margin-bottom: 8px;">
+                            #${index + 1} ${session.title || session.strategy_name}
+                        </div>
+                        <div style="font-size: 2rem; font-weight: 700; color: ${session.ninja_color}; margin: 10px 0;">
+                            ${session.ninja_score.toFixed(2)}
+                        </div>
+                        <div style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 15px;">
+                            ${m.total_net_profit_percentage.toFixed(2)}% Return | ${m.win_rate.toFixed(1)}% Win Rate
+                        </div>
+                        <a href="${reportUrl}" 
+                           style="display: inline-block; padding: 8px 16px; background: ${colors[index]}; 
+                                  color: white; text-decoration: none; border-radius: 6px; font-weight: 600;
+                                  transition: opacity 0.2s;" 
+                           onmouseover="this.style.opacity='0.8'" 
+                           onmouseout="this.style.opacity='1'"
+                           target="_blank">
+                            ${currentLang === 'en' ? '📊 View Report' : '📊 Просмотр отчета'}
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderTable(sessions) {
+            const container = document.getElementById('table-content');
+            
+            if (sessions.length === 0) {
+                const noDataText = currentLang === 'en' ? 'No data to display' : 'Нет данных для отображения';
+                container.innerHTML = `<div class="loading">${noDataText}</div>`;
+                return;
+            }
+            
+            const headers = {
+                en: {
+                    ninja_score: "Ninja Score",
+                    strategy: "Strategy / Title",
+                    total_pnl: "Total PnL",
+                    return_pct: "Return %",
+                    win_rate: "Win Rate %",
+                    trades: "Trades",
+                    sharpe: "Sharpe",
+                    profit_factor: "Profit Factor",
+                    expectancy: "Expectancy",
+                    drawdown: "Drawdown %",
+                    actions: "Actions"
+                },
+                ru: {
+                    ninja_score: "Ninja Score",
+                    strategy: "Стратегия / Название",
+                    total_pnl: "Total PnL",
+                    return_pct: "Return %",
+                    win_rate: "Win Rate %",
+                    trades: "Trades",
+                    sharpe: "Sharpe",
+                    profit_factor: "Profit Factor",
+                    expectancy: "Expectancy",
+                    drawdown: "Drawdown %",
+                    actions: "Действия"
+                }
+            };
+            
+            const h = headers[currentLang] || headers.en;
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('ninja_score')">${h.ninja_score}</th>
+                            <th onclick="sortTable('strategy_name')">${h.strategy}</th>
+                            <th class="sortable" onclick="sortTable('total_pnl')">${h.total_pnl}</th>
+                            <th class="sortable" onclick="sortTable('return_pct')">${h.return_pct}</th>
+                            <th class="sortable" onclick="sortTable('win_rate')">${h.win_rate}</th>
+                            <th class="sortable" onclick="sortTable('trades')">${h.trades}</th>
+                            <th class="sortable" onclick="sortTable('sharpe')">${h.sharpe}</th>
+                            <th class="sortable" onclick="sortTable('profit_factor')">${h.profit_factor}</th>
+                            <th class="sortable" onclick="sortTable('expectancy')">${h.expectancy}</th>
+                            <th class="sortable" onclick="sortTable('drawdown')">${h.drawdown}</th>
+                            <th>${h.actions}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            sessions.forEach(session => {
+                const m = session.metrics;
+                const category = session.ninja_category.toLowerCase();
+                const title = session.title || session.strategy_name;
+                const description = session.description || '';
+                const reportUrl = session.report_url || `/#/backtest/${session.id}`;
+                const dateStr = session.created_at ? new Date(parseInt(session.created_at)).toLocaleDateString('ru-RU') : '';
+                
+                html += `
+                    <tr>
+                        <td><span class="ninja-score ${category}">${session.ninja_score.toFixed(2)}</span></td>
+                        <td>
+                            <div style="max-width: 300px;">
+                                <a href="${reportUrl}" style="color: #3b82f6; text-decoration: none; font-weight: 600;" 
+                                   onmouseover="this.style.textDecoration='underline'" 
+                                   onmouseout="this.style.textDecoration='none'"
+                                   target="_blank">
+                                    ${title}
+                                </a>
+                                ${description ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">${description.substring(0, 50)}${description.length > 50 ? '...' : ''}</div>` : ''}
+                                <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">${dateStr}</div>
+                                <a href="${reportUrl}" style="display: inline-block; margin-top: 4px; font-size: 0.75rem; color: #10b981; text-decoration: none;" target="_blank">
+                                    ${currentLang === 'en' ? '📊 View Charts →' : '📊 Просмотр графиков →'}
+                                </a>
+                            </div>
+                        </td>
+                        <td>$${m.total_net_profit.toFixed(2)}</td>
+                        <td>${m.total_net_profit_percentage.toFixed(2)}%</td>
+                        <td>${m.win_rate.toFixed(2)}%</td>
+                        <td>${m.total_trades}</td>
+                        <td>${m.sharpe_ratio.toFixed(2)}</td>
+                        <td>${m.profit_factor.toFixed(2)}</td>
+                        <td>${m.expectancy.toFixed(4)}</td>
+                        <td>${m.max_drawdown_percentage.toFixed(2)}%</td>
+                        <td>
+                            <button onclick="editSession('${session.id}', '${title.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}')" 
+                                    style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                                ✏️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        function sortTable(field) {
+            if (currentSort.field === field) {
+                currentSort.order = currentSort.order === 'desc' ? 'asc' : 'desc';
+            } else {
+                currentSort.field = field;
+                currentSort.order = 'desc';
+            }
+            
+            document.getElementById('sort-by').value = field;
+            document.getElementById('sort-order').value = currentSort.order;
+            
+            loadSessions();
+        }
+        
+        function updateCharts(sessions) {
+            // Ninja Score Chart
+            const topSessions = sessions.slice(0, 10);
+            const ctx1 = document.getElementById('ninja-score-chart').getContext('2d');
+            
+            if (window.ninjaChart) {
+                window.ninjaChart.destroy();
+            }
+            
+            window.ninjaChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: topSessions.map(s => s.strategy_name),
+                    datasets: [{
+                        label: 'Ninja Score',
+                        data: topSessions.map(s => s.ninja_score),
+                        backgroundColor: topSessions.map(s => s.ninja_color)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Radar Chart
+            const top3 = sessions.slice(0, 3);
+            if (top3.length > 0) {
+                const ctx2 = document.getElementById('radar-chart').getContext('2d');
+                
+                if (window.radarChart) {
+                    window.radarChart.destroy();
+                }
+                
+                const metrics = ['win_rate', 'sharpe_ratio', 'profit_factor', 'expectancy', 'total_net_profit_percentage'];
+                window.radarChart = new Chart(ctx2, {
+                    type: 'radar',
+                    data: {
+                        labels: metrics,
+                        datasets: top3.map((s, i) => ({
+                            label: s.strategy_name,
+                            data: metrics.map(m => {
+                                const val = s.metrics[m];
+                                return m === 'total_net_profit_percentage' ? val / 10 : val;
+                            }),
+                            borderColor: s.ninja_color,
+                            backgroundColor: s.ninja_color + '20'
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            r: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function applyPreset(preset) {
+            resetFilters();
+            
+            if (preset === 'top') {
+                document.getElementById('min-ninja-score').value = 200;
+                document.getElementById('min-return').value = 0;
+                document.getElementById('min-win-rate').value = 50;
+            } else if (preset === 'profitable') {
+                document.getElementById('min-return').value = 0;
+                document.getElementById('min-profit-factor').value = 1.0;
+            } else if (preset === 'high-winrate') {
+                document.getElementById('min-win-rate').value = 60;
+                document.getElementById('min-trades').value = 10;
+            }
+            
+            loadSessions();
+        }
+        
+        function resetFilters() {
+            document.getElementById('min-ninja-score').value = '';
+            document.getElementById('min-win-rate').value = '';
+            document.getElementById('min-return').value = '';
+            document.getElementById('min-profit-factor').value = '';
+            document.getElementById('min-expectancy').value = '';
+            document.getElementById('min-trades').value = '';
+            document.getElementById('min-sharpe').value = '';
+            document.getElementById('max-drawdown').value = '';
+            document.getElementById('sort-by').value = 'ninja_score';
+            document.getElementById('sort-order').value = 'desc';
+            currentSort = { field: 'ninja_score', order: 'desc' };
+        }
+        
+        function exportCSV() {
+            if (currentSessions.length === 0) return;
+            
+            const headers = ['Strategy', 'Ninja Score', 'Category', 'Total PnL', 'Return %', 'Win Rate %', 'Trades', 'Sharpe', 'Profit Factor', 'Expectancy', 'Drawdown %'];
+            const rows = currentSessions.map(s => [
+                s.strategy_name,
+                s.ninja_score.toFixed(2),
+                s.ninja_category,
+                s.metrics.total_net_profit.toFixed(2),
+                s.metrics.total_net_profit_percentage.toFixed(2),
+                s.metrics.win_rate.toFixed(2),
+                s.metrics.total_trades,
+                s.metrics.sharpe_ratio.toFixed(2),
+                s.metrics.profit_factor.toFixed(2),
+                s.metrics.expectancy.toFixed(4),
+                s.metrics.max_drawdown_percentage.toFixed(2)
+            ]);
+            
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jesse_rating_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+        
+        function setupEventListeners() {
+            const filterInputs = document.querySelectorAll('.filter-group input, .filter-group select');
+            filterInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    setTimeout(loadSessions, 300);
+                });
+            });
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function editSession(sessionId, currentTitle, currentDescription) {
+            const titlePrompt = currentLang === 'en' ? 'Strategy Title:' : 'Название стратегии:';
+            const descPrompt = currentLang === 'en' ? 'Description / Notes:' : 'Описание / Заметки:';
+            
+            const title = prompt(titlePrompt, currentTitle);
+            if (title === null) return;
+            
+            const description = prompt(descPrompt, currentDescription || '');
+            if (description === null) return;
+            
+            // Update via API
+            fetch(`/rating/session/${sessionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authToken
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: description
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const successMsg = currentLang === 'en' ? '✅ Updated successfully!' : '✅ Обновлено успешно!';
+                showError(successMsg);
+                loadSessions();
+            })
+            .catch(error => {
+                const errorMsg = currentLang === 'en' ? '❌ Update error: ' : '❌ Ошибка обновления: ';
+                showError(errorMsg + error.message);
+            });
+        }
+        
+        // Internationalization
+        const translations = {
+            en: {
+                total_strategies: "Total Strategies",
+                filtered_strategies: "Filtered",
+                avg_ninja_score: "Avg Ninja Score",
+                best_ninja_score: "Best Ninja Score",
+                strategy: "Strategy / Title",
+                actions: "Actions",
+                view_charts: "View Charts →",
+                min_ninja_score: "Min Ninja Score",
+                min_win_rate: "Min Win Rate (%)",
+                min_return: "Min Return (%)",
+                min_profit_factor: "Min Profit Factor",
+                min_expectancy: "Min Expectancy",
+                min_trades: "Min Trades",
+                min_sharpe: "Min Sharpe",
+                max_drawdown: "Max Drawdown (%)",
+                sort_by: "Sort By",
+                sort_order: "Order",
+                desc: "Descending",
+                asc: "Ascending",
+                preset_top: "🏆 Top Strategies",
+                preset_profitable: "💰 Profitable Only",
+                preset_high_winrate: "📈 High Win Rate",
+                reset_filters: "🔄 Reset Filters",
+                strategies: "Strategies",
+                export_csv: "📥 Export CSV",
+                view_report: "📊 View Report",
+                no_data: "No data to display",
+                loading: "Loading data...",
+                updated_success: "✅ Updated successfully!",
+                update_error: "❌ Update error: "
+            },
+            ru: {
+                total_strategies: "Всего стратегий",
+                filtered_strategies: "Отфильтровано",
+                avg_ninja_score: "Средний Ninja Score",
+                best_ninja_score: "Лучший Ninja Score",
+                strategy: "Стратегия / Название",
+                actions: "Действия",
+                view_charts: "Просмотр графиков →",
+                min_ninja_score: "Мин. Ninja Score",
+                min_win_rate: "Мин. Win Rate (%)",
+                min_return: "Мин. Return (%)",
+                min_profit_factor: "Мин. Profit Factor",
+                min_expectancy: "Мин. Expectancy",
+                min_trades: "Мин. Trades",
+                min_sharpe: "Мин. Sharpe",
+                max_drawdown: "Макс. Drawdown (%)",
+                sort_by: "Сортировка",
+                sort_order: "Порядок",
+                desc: "По убыванию",
+                asc: "По возрастанию",
+                preset_top: "🏆 Топ стратегии",
+                preset_profitable: "💰 Только прибыльные",
+                preset_high_winrate: "📈 Высокий Win Rate",
+                reset_filters: "🔄 Сбросить фильтры",
+                strategies: "Стратегии",
+                export_csv: "📥 Экспорт CSV",
+                view_report: "📊 Просмотр отчета",
+                no_data: "Нет данных для отображения",
+                loading: "Загрузка данных...",
+                updated_success: "✅ Обновлено успешно!",
+                update_error: "❌ Ошибка обновления: "
+            }
+        };
+        
+        let currentLang = 'en';
+        
+        function translatePage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.tagName === 'OPTION') {
+                        // For select options, update text but keep value
+                        el.textContent = translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+            
+            // Update loading text
+            const loadingEl = document.querySelector('#table-content .loading');
+            if (loadingEl) {
+                loadingEl.textContent = translations[lang].loading;
+            }
+            
+            // Re-render table with new language
+            if (currentSessions.length > 0) {
+                renderTable(currentSessions);
+                renderTopLeaders(currentSessions);
+            }
+        }
+        
+        document.getElementById('language-select').addEventListener('change', (e) => {
+            translatePage(e.target.value);
+        });
+        
+        // Initialize with English by default
+        translatePage('en');
+        
+        // Start
+        init();
+    </script>
+</body>
+</html>
+

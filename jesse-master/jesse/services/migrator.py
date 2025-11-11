@@ -2,6 +2,7 @@ from jesse.services.db import database
 from playhouse.migrate import *
 from jesse.enums import migration_actions
 import click
+import peewee
 
 
 def run():
@@ -28,6 +29,7 @@ def run():
     _ticker(migrator)
     _trade(migrator)
     _exchange_api_keys(migrator)
+    _backtest_session(migrator)
 
     # create initial tables
     from jesse.models import Candle, ClosedTrade, Log, Order, Option
@@ -119,6 +121,22 @@ def _exchange_api_keys(migrator):
     if 'exchange_api_keys' in database.db.get_tables():
         exchange_api_keys_columns = database.db.get_columns('exchange_api_keys')
         _migrate(migrator, fields, exchange_api_keys_columns, 'exchange_api_keys')
+
+
+def _backtest_session(migrator):
+    """
+    Add ninja_score and ninja_category fields to backtest_session table for fast rating access
+    """
+    fields = [
+        {'name': 'ninja_score', 'type': peewee.FloatField(null=True), 'action': migration_actions.ADD},
+        {'name': 'ninja_category', 'type': peewee.CharField(null=True, max_length=20), 'action': migration_actions.ADD},
+        {'action': migration_actions.ADD_INDEX, 'indexes': ('ninja_score',), 'is_unique': False},
+        {'action': migration_actions.ADD_INDEX, 'indexes': ('status', 'ninja_score'), 'is_unique': False},
+    ]
+
+    if 'backtest_session' in database.db.get_tables():
+        backtest_session_columns = database.db.get_columns('backtest_session')
+        _migrate(migrator, fields, backtest_session_columns, 'backtest_session')
 
 
 def _migrate(migrator, fields, columns, table):

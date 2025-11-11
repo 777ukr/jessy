@@ -114,7 +114,7 @@ def format_timestamp(ts):
 def main():
     parser = argparse.ArgumentParser(description='Просмотр данных по биткоину из базы Jesse')
     parser.add_argument('--exchange', default='Gate USDT Perpetual', help='Название биржи')
-    parser.add_argument('--symbol', default='USDT-USDT', help='Символ (например, USDT-USDT)')
+    parser.add_argument('--symbol', default='BTC-USDT', help='Символ (например, BTC-USDT)')
     parser.add_argument('--timeframe', default='1m', help='Таймфрейм (1m, 5m, 1h и т.д.)')
     parser.add_argument('--count', type=int, default=10, help='Количество свечей для показа')
     parser.add_argument('--list', action='store_true', help='Показать список всех доступных данных')

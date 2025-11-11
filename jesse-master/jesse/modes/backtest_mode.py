@@ -109,11 +109,24 @@ def _execute_backtest(
 
     # Store backtest session in database (only for UI dashboard, not for CLI/research)
     if not jh.should_execute_silently():
-        from jesse.models.BacktestSession import store_backtest_session
+        from jesse.models.BacktestSession import store_backtest_session, update_backtest_session_state
         store_backtest_session(
             id=client_id,
             status='running'
         )
+        
+        # Save routes info immediately so strategy names are available
+        routes_info = []
+        for r in routes:
+            routes_info.append({
+                'exchange': r.get('exchange', exchange),
+                'symbol': r.get('symbol', ''),
+                'timeframe': r.get('timeframe', ''),
+                'strategy': r.get('strategy', '')
+            })
+        
+        if routes_info:
+            update_backtest_session_state(client_id, {'routes': routes_info})
 
     # validate routes
     validate_routes(router)
@@ -227,8 +240,9 @@ def _execute_backtest(
                 'add_horizontal_line_to_extra_chart': _get_add_horizontal_line_to_extra_chart()
             }
         
-        # Capture strategy codes for each route
+        # Capture strategy codes and routes info for each route
         strategy_codes = {}
+        routes_info = []
         import os
         for r in router.routes:
             key = f"{r.exchange}-{r.symbol}"
@@ -242,9 +256,21 @@ def _execute_backtest(
                         strategy_codes[key] = content
                 except Exception:
                     pass
+            
+            # Save route info including strategy name
+            routes_info.append({
+                'exchange': r.exchange,
+                'symbol': r.symbol,
+                'timeframe': r.timeframe,
+                'strategy': r.strategy_name
+            })
+        
+        # Calculate and cache Ninja Score for fast rating access
+        from jesse.services.ninja_score import calculate_ninja_score
+        ninja_data = calculate_ninja_score(result.get('metrics', {}))
         
         # Update backtest session in database with results
-        from jesse.models.BacktestSession import update_backtest_session_results, update_backtest_session_status
+        from jesse.models.BacktestSession import update_backtest_session_results, update_backtest_session_status, update_backtest_session_state
         update_backtest_session_results(
             id=client_id,
             metrics=result.get('metrics'),
@@ -253,8 +279,25 @@ def _execute_backtest(
             hyperparameters=result.get('hyperparameters'),
             chart_data=chart_data,
             execution_duration=result.get('execution_duration'),
-            strategy_codes=strategy_codes if strategy_codes else None
+            strategy_codes=strategy_codes if strategy_codes else None,
+            ninja_score=ninja_data['ninja_score'],
+            ninja_category=ninja_data['category']
         )
+        
+        # Generate automatic title from strategy, timeframe, dates, and symbol
+        auto_title = _generate_backtest_title(routes_info, start_date, finish_date)
+        
+        # Save routes info in state for easy access
+        if routes_info:
+            update_backtest_session_state(client_id, {'routes': routes_info})
+        
+        # Update title if not already set by user
+        from jesse.models.BacktestSession import get_backtest_session_by_id
+        session = get_backtest_session_by_id(client_id)
+        if session and not session.title:
+            from jesse.models.BacktestSession import BacktestSession
+            BacktestSession.update(title=auto_title).where(BacktestSession.id == client_id).execute()
+        
         update_backtest_session_status(client_id, 'finished')
 
     # close database connection
@@ -348,6 +391,36 @@ def _get_add_horizontal_line_to_extra_chart():
             'lines': r.strategy._add_horizontal_line_to_extra_chart_values
         })
     return arr
+
+
+def _generate_backtest_title(routes_info: list, start_date: str, finish_date: str) -> str:
+    """
+    Generate automatic title for backtest session
+    Format: StrategyName | Symbol | Timeframe | DateRange
+    Example: SuperNinja | BTC-USDT | 5m | 2024-11-01 to 2024-11-07
+    """
+    if not routes_info:
+        return f"Backtest | {start_date} to {finish_date}"
+    
+    # Get first route info
+    route = routes_info[0]
+    strategy_name = route.get('strategy', 'Unknown')
+    symbol = route.get('symbol', '')
+    timeframe = route.get('timeframe', '')
+    
+    # Format dates (remove time if present)
+    start = start_date[:10] if len(start_date) >= 10 else start_date
+    finish = finish_date[:10] if len(finish_date) >= 10 else finish_date
+    
+    # Build title
+    parts = [strategy_name]
+    if symbol:
+        parts.append(symbol)
+    if timeframe:
+        parts.append(timeframe)
+    parts.append(f"{start} to {finish}")
+    
+    return " | ".join(parts)
 
 
 def _handle_missing_candles(exchange: str, symbol: str, start_date: int, message: str = None):

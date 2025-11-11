@@ -52,7 +52,7 @@ def run_backtest(strategy_name, start_date, finish_date, timeframe="5m", exchang
         "routes": [
             {
                 "exchange": exchange,
-                "symbol": "USDT-USDT",
+                "symbol": "BTC-USDT",
                 "timeframe": timeframe,
                 "strategy": strategy_name
             }
@@ -65,7 +65,7 @@ def run_backtest(strategy_name, start_date, finish_date, timeframe="5m", exchang
         "export_csv": False,
         "export_json": False,
         "fast_mode": True,
-        "benchmark": None
+        "benchmark": False
     }
     
     print(f"Запуск бектеста для стратегии '{strategy_name}'...")
@@ -96,18 +96,96 @@ def run_backtest(strategy_name, start_date, finish_date, timeframe="5m", exchang
         print(f"Ответ: {response.text}")
         return None
 
+def get_available_dates(exchange="Gate USDT Perpetual", symbol="BTC-USDT"):
+    """Получить доступные даты из базы данных"""
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'jesse-master'))
+        
+        from jesse.services.db import database
+        from jesse.models.Candle import Candle
+        import jesse.helpers as jh
+        
+        # Убеждаемся, что БД закрыта перед открытием
+        if database.is_open():
+            database.close_connection()
+        
+        database.open_connection()
+        
+        try:
+            first = Candle.select().where(
+                Candle.exchange == exchange,
+                Candle.symbol == symbol
+            ).order_by(Candle.timestamp.asc()).first()
+            
+            last = Candle.select().where(
+                Candle.exchange == exchange,
+                Candle.symbol == symbol
+            ).order_by(Candle.timestamp.desc()).first()
+            
+            if first and last:
+                start_date = jh.timestamp_to_date(first.timestamp)[:10]
+                end_date = jh.timestamp_to_date(last.timestamp)[:10]
+                return (start_date, end_date)
+        finally:
+            if database.is_open():
+                database.close_connection()
+    except Exception as e:
+        # Игнорируем ошибки, возвращаем None
+        pass
+    
+    return None, None
+
 def main():
-    if len(sys.argv) < 4:
+    # Получаем доступные даты
+    available_start, available_end = get_available_dates()
+    
+    if len(sys.argv) < 2:
         print(__doc__)
+        print("\n📊 Доступные даты в базе данных:")
+        if available_start and available_end:
+            print(f"   Первая свеча: {available_start}")
+            print(f"   Последняя свеча: {available_end}")
+        else:
+            print("   Не удалось определить доступные даты")
         print("\nПримеры:")
-        print('  python3 run_backtest.py SuperNinja "2024-01-01" "2025-11-07"')
-        print('  python3 run_backtest.py SuperNinja "2024-01-01" "2025-11-07" --timeframe 5m')
-        print('  python3 run_backtest.py SuperNinja "2024-01-01" "2025-11-07" --timeframe 1h')
+        if available_start and available_end:
+            print(f'  python3 run_backtest.py SuperNinja "{available_start}" "{available_end}"')
+            print(f'  python3 run_backtest.py SuperNinja "{available_start}" "{available_end}" --timeframe 5m')
+        else:
+            print('  python3 run_backtest.py SuperNinja "2024-11-01" "2024-11-07"')
+            print('  python3 run_backtest.py SuperNinja "2024-11-01" "2024-11-07" --timeframe 5m')
         sys.exit(1)
     
     strategy_name = sys.argv[1]
-    start_date = sys.argv[2]
-    finish_date = sys.argv[3]
+    
+    # Если даты не указаны, используем доступные из БД
+    if len(sys.argv) < 4:
+        if available_start and available_end:
+            start_date = available_start
+            finish_date = available_end
+            print(f"📊 Используются доступные даты из БД:")
+            print(f"   Начало: {start_date}")
+            print(f"   Конец: {finish_date}")
+            print()
+        else:
+            print("❌ Ошибка: не удалось определить доступные даты")
+            print("   Укажите даты вручную:")
+            print('   python3 run_backtest.py SuperNinja "2024-11-01" "2024-11-07"')
+            sys.exit(1)
+    else:
+        start_date = sys.argv[2]
+        finish_date = sys.argv[3]
+        
+        # Проверяем, что указанные даты доступны
+        if available_start and available_end:
+            if start_date < available_start:
+                print(f"⚠️  Внимание: Дата начала {start_date} раньше первой доступной даты {available_start}")
+                print(f"   Используйте даты в диапазоне: {available_start} - {available_end}")
+            if finish_date > available_end:
+                print(f"⚠️  Внимание: Дата окончания {finish_date} позже последней доступной даты {available_end}")
+                print(f"   Используйте даты в диапазоне: {available_start} - {available_end}")
     
     # Парсим дополнительные параметры
     timeframe = "5m"

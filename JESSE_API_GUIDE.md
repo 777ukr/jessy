@@ -46,7 +46,7 @@ Content-Type: application/json
   "exchange": "Gate USDT Perpetual",
   "routes": [{
     "exchange": "Gate USDT Perpetual",
-    "symbol": "USDT-USDT",
+    "symbol": "BTC-USDT",
     "timeframe": "5m",
     "strategy": "SuperNinja"
   }],

@@ -35,6 +35,12 @@ class BacktestSession(peewee.Model):
     
     # Execution metrics
     execution_duration = peewee.FloatField(null=True)
+    
+    # Rating metrics (cached for fast access)
+    # Note: These fields are added via migration, not in model definition
+    # to avoid create_table() errors. They will be available after migration.
+    ninja_score = peewee.FloatField(null=True)
+    ninja_category = peewee.CharField(null=True, max_length=20)
 
     # Timestamps for session management
     created_at = peewee.BigIntegerField()
@@ -47,6 +53,7 @@ class BacktestSession(peewee.Model):
         indexes = (
             (('id',), True),
             (('created_at',), False),
+            # ninja_score indexes will be added by migration
         )
 
     def __init__(self, attributes: dict = None, **kwargs) -> None:
@@ -270,7 +277,9 @@ def update_backtest_session_results(
     hyperparameters: dict = None,
     chart_data: dict = None,
     execution_duration: float = None,
-    strategy_codes: dict = None
+    strategy_codes: dict = None,
+    ninja_score: float = None,
+    ninja_category: str = None
 ) -> None:
     d = {
         'updated_at': jh.now_to_timestamp(True)
@@ -296,15 +305,27 @@ def update_backtest_session_results(
 
     if strategy_codes is not None:
         d['strategy_codes'] = json.dumps(strategy_codes)
+    
+    if ninja_score is not None:
+        d['ninja_score'] = ninja_score
+    
+    if ninja_category is not None:
+        d['ninja_category'] = ninja_category
 
     BacktestSession.update(**d).where(BacktestSession.id == id).execute()
 
 
-def get_backtest_sessions(limit: int = 50, offset: int = 0, title_search: str = None, status_filter: str = None, date_filter: str = None) -> list:
+def get_backtest_sessions(limit: int = 50, offset: int = 0, title_search: str = None, status_filter: str = None, date_filter: str = None, sort_by: str = None, sort_order: str = 'desc') -> list:
     """
-    Returns a list of BacktestSession objects sorted by most recently updated
+    Returns a list of BacktestSession objects sorted by most recently updated or by specified field
     """
-    query = BacktestSession.select().order_by(BacktestSession.updated_at.desc())
+    if sort_by == 'ninja_score':
+        if sort_order == 'desc':
+            query = BacktestSession.select().order_by(BacktestSession.ninja_score.desc().nulls_last())
+        else:
+            query = BacktestSession.select().order_by(BacktestSession.ninja_score.asc().nulls_last())
+    else:
+        query = BacktestSession.select().order_by(BacktestSession.updated_at.desc())
     
     # Apply title filter (case-insensitive)
     if title_search:
